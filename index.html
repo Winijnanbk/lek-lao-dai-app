@@ -6,9 +6,7 @@
   <meta name="description" content="เลขเล่าได้ - เครื่องมือวิเคราะห์สถิติเลขท้าย 2 ตัวจากข้อมูลย้อนหลัง เพื่อประกอบการตัดสินใจ" />
   <title>เลขเล่าได้ | วิเคราะห์สถิติเลขท้าย 2 ตัว</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Tahoma','Arial','sans-serif'] } } } }
-  </script>
+  <script>if (window.tailwind) { tailwind.config = { theme: { extend: { fontFamily: { sans: ['Tahoma','Arial','sans-serif'] } } } }; }</script>
   <style>
     * { border-radius: 0 !important; }
     body { background:#f7f9fc; color:#172033; }
@@ -22,14 +20,21 @@
         <div class="text-3xl font-bold tracking-tight">เลขเล่าได้</div>
         <div class="text-base md:text-lg text-blue-100 mt-1">ดูสถิติย้อนหลังให้เข้าใจง่าย ก่อนตัดสินใจ</div>
       </div>
-      <div class="border border-blue-200 px-4 py-2 text-base bg-[#082f6b]">V1 • เลขท้าย 2 ตัว</div>
+      <div class="border border-blue-200 px-4 py-2 text-base bg-[#082f6b]">V2 • ข้อมูลจริง</div>
     </div>
   </header>
 
   <main class="max-w-5xl mx-auto px-4 py-6 md:py-8">
+    <section class="mb-6 border-2 border-slate-300 bg-white p-4 md:p-5">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div><div class="text-lg font-bold text-[#0b3a82]">สถานะข้อมูล</div><div id="dataStatus" class="text-lg mt-1">กำลังตรวจสอบข้อมูล...</div></div>
+        <button id="refreshDataBtn" class="focus-ring border-2 border-[#0b3a82] px-4 py-3 text-lg font-bold text-[#0b3a82] hover:bg-blue-50">อัปเดตข้อมูล</button>
+      </div>
+      <div id="latestDraw" class="mt-3 bg-slate-50 border-l-8 border-[#0b3a82] px-4 py-3 text-lg"></div>
+    </section>
     <section class="bg-white border-2 border-slate-300 p-5 md:p-7">
       <h1 class="text-2xl md:text-3xl font-bold text-[#0b3a82]">ลองวิเคราะห์เลขที่คุณสนใจ</h1>
-      <p class="mt-2 text-lg leading-8 text-slate-700">กรอกเลข 2 ตัว เช่น 27 ระบบจะแสดง “คะแนนสถิติ” จากข้อมูลตัวอย่างย้อนหลัง พร้อมบอกที่มาของคะแนนแบบอ่านง่าย</p>
+      <p class="mt-2 text-lg leading-8 text-slate-700">กรอกเลข 2 ตัว เช่น 27 ระบบจะวิเคราะห์จากผลรางวัลเลขท้าย 2 ตัวย้อนหลังจริง พร้อมแสดงที่มาและวันที่ข้อมูลล่าสุด</p>
 
       <div class="mt-6 grid md:grid-cols-[1fr_220px] gap-3">
         <label class="block">
@@ -63,7 +68,7 @@
         <div>
           <h2 class="text-2xl font-bold text-[#0b3a82]">ข้อมูลที่ใช้ประกอบคะแนน</h2>
           <div class="mt-4 border-t-2 border-slate-300">
-            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>พบใน 30 งวดตัวอย่าง</span><strong class="text-right" id="frequency">0 ครั้ง</strong></div>
+            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>พบในช่วงข้อมูลย้อนหลัง</span><strong class="text-right" id="frequency">0 ครั้ง</strong></div>
             <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>ห่างจากครั้งล่าสุด</span><strong class="text-right" id="gap">-</strong></div>
             <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>ความถี่เลขหลักสิบ</span><strong class="text-right" id="tensFreq">-</strong></div>
             <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>ความถี่เลขหลักหน่วย</span><strong class="text-right" id="onesFreq">-</strong></div>
@@ -87,7 +92,7 @@
 
     <section class="mt-6 bg-white border-2 border-slate-300 p-5 md:p-7">
       <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
-        <div><h2 class="text-2xl font-bold text-[#0b3a82]">เลขที่เด่นในชุดข้อมูลตัวอย่าง</h2><p class="text-lg mt-1 text-slate-600">กดที่เลขเพื่อดูรายละเอียดได้ทันที</p></div>
+        <div><h2 class="text-2xl font-bold text-[#0b3a82]">เลขที่เด่นจากข้อมูลย้อนหลัง</h2><p class="text-lg mt-1 text-slate-600">กดที่เลขเพื่อดูรายละเอียดได้ทันที</p></div>
         <span class="text-base bg-slate-100 border border-slate-300 px-3 py-2">เรียงตามคะแนนสถิติ</span>
       </div>
       <div id="topNumbers" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-5"></div>
@@ -95,7 +100,7 @@
 
     <section class="mt-6 grid md:grid-cols-2 gap-6">
       <div class="bg-white border-2 border-slate-300 p-5 md:p-6">
-        <h2 class="text-xl font-bold text-[#0b3a82]">สูตรคะแนน V1</h2>
+        <h2 class="text-xl font-bold text-[#0b3a82]">สูตรคะแนน V2</h2>
         <div class="text-lg leading-8 mt-3">
           <div>ความถี่ย้อนหลัง <strong>40 คะแนน</strong></div>
           <div>ระยะห่างจากครั้งล่าสุด <strong>25 คะแนน</strong></div>
@@ -105,7 +110,7 @@
       </div>
       <div class="bg-white border-2 border-slate-300 p-5 md:p-6">
         <h2 class="text-xl font-bold text-[#0b3a82]">แหล่งข้อมูลสำหรับเวอร์ชันจริง</h2>
-        <p class="text-lg leading-8 mt-3">V1 นี้ใช้ชุดข้อมูลจำลองในไฟล์เพื่อให้ทดลองหน้าเว็บได้ทันที เวอร์ชันถัดไปควรเชื่อมข้อมูลผลรางวัลจากสำนักงานสลากกินแบ่งรัฐบาล และแสดงวันที่อัปเดตทุกครั้ง</p>
+        <p class="text-lg leading-8 mt-3">เว็บจะพยายามเชื่อม GLO API โดยตรงเมื่อเปิดหน้า หากเบราว์เซอร์หรือ CORS ไม่อนุญาต ระบบจะใช้ข้อมูลสำรองจริงที่บันทึกไว้ในไฟล์และบอกสถานะอย่างชัดเจน</p>
         <a class="focus-ring inline-block mt-3 text-lg font-bold text-[#0b3a82] underline" href="https://gdcatalog.glo.or.th/dataset/dataset_c4-9_01" target="_blank" rel="noopener">ดู GLO Open Data</a>
       </div>
     </section>
@@ -118,76 +123,96 @@
   </footer>
 
 <script>
-// DEMO DATA: เลขท้าย 2 ตัวจำลอง 30 งวด เรียงจากใหม่ -> เก่า
-const history = ['06','94','51','27','87','79','61','32','09','90','21','46','43','89','14','85','31','91','62','37','05','99','58','16','81','27','44','73','27','20'];
+const GLO_ENDPOINT = 'https://www.glo.or.th/api/lottery/getLotteryResultByPage';
+// ข้อมูลสำรองจริง 30 งวดล่าสุด ณ 16 ก.ย. 2569 (ใหม่ -> เก่า)
+// ใช้เมื่อ GLO API ไม่อนุญาต cross-origin request จาก GitHub Pages
+const cachedDraws = [
+ {date:'16 ก.ย. 2569',last2:'64'},{date:'1 ก.ย. 2569',last2:'04'},{date:'16 ส.ค. 2569',last2:'53'},
+ {date:'1 ส.ค. 2569',last2:'69'},{date:'16 ก.ค. 2569',last2:'71'},{date:'1 ก.ค. 2569',last2:'62'},
+ {date:'16 มิ.ย. 2569',last2:'48'},{date:'1 มิ.ย. 2569',last2:'95'},{date:'16 พ.ค. 2569',last2:'08'},
+ {date:'2 พ.ค. 2569',last2:'43'},{date:'16 เม.ย. 2569',last2:'77'},{date:'1 เม.ย. 2569',last2:'47'},
+ {date:'16 มี.ค. 2569',last2:'64'},{date:'1 มี.ค. 2569',last2:'06'},{date:'16 ก.พ. 2569',last2:'07'},
+ {date:'1 ก.พ. 2569',last2:'48'},{date:'17 ม.ค. 2569',last2:'02'},{date:'2 ม.ค. 2569',last2:'16'},
+ {date:'16 ธ.ค. 2568',last2:'52'},{date:'1 ธ.ค. 2568',last2:'22'},{date:'16 พ.ย. 2568',last2:'37'},
+ {date:'1 พ.ย. 2568',last2:'87'},{date:'16 ต.ค. 2568',last2:'61'},{date:'1 ต.ค. 2568',last2:'77'},
+ {date:'16 ก.ย. 2568',last2:'58'},{date:'1 ก.ย. 2568',last2:'31'},{date:'16 ส.ค. 2568',last2:'63'},
+ {date:'1 ส.ค. 2568',last2:'50'},{date:'16 ก.ค. 2568',last2:'26'},{date:'1 ก.ค. 2568',last2:'91'}
+];
+let draws = [...cachedDraws];
+let history = draws.map(x=>x.last2);
 
-const input = document.getElementById('numberInput');
-const resultSection = document.getElementById('resultSection');
-const errorText = document.getElementById('errorText');
+const input=document.getElementById('numberInput');
+const resultSection=document.getElementById('resultSection');
+const errorText=document.getElementById('errorText');
+const dataStatus=document.getElementById('dataStatus');
+const latestDraw=document.getElementById('latestDraw');
+input.addEventListener('input',()=>input.value=input.value.replace(/\D/g,'').slice(0,2));
+input.addEventListener('keydown',e=>{if(e.key==='Enter') analyze();});
+document.getElementById('analyzeBtn').addEventListener('click',()=>analyze());
+document.getElementById('refreshDataBtn').addEventListener('click',()=>loadLiveData(true));
 
-input.addEventListener('input', () => input.value = input.value.replace(/\D/g,'').slice(0,2));
-input.addEventListener('keydown', e => { if(e.key === 'Enter') analyze(); });
-document.getElementById('analyzeBtn').addEventListener('click', analyze);
+function normalizeLast2(v){ const m=String(v??'').match(/(?:^|\D)(\d{2})(?:\D|$)/); return m?m[1]:null; }
+function walk(obj,out=[]){
+ if(!obj||typeof obj!=='object') return out;
+ if(Array.isArray(obj)){obj.forEach(x=>walk(x,out));return out;}
+ const keys=Object.keys(obj); const low=Object.fromEntries(keys.map(k=>[k.toLowerCase(),k]));
+ const numberKey=keys.find(k=>/last.?2|lasttwo|two.?digit|reward.?2|number.?2|เลขท้าย.?2/i.test(k));
+ const dateKey=keys.find(k=>/date|draw.?date|lottery.?date|งวด/i.test(k));
+ if(numberKey){ const n=normalizeLast2(obj[numberKey]); if(n) out.push({date:dateKey?String(obj[dateKey]):'',last2:n}); }
+ keys.forEach(k=>walk(obj[k],out)); return out;
+}
+function uniqueDraws(list){ const seen=new Set(); return list.filter(x=>/^\d{2}$/.test(x.last2)&&!seen.has((x.date||'')+'|'+x.last2)&&seen.add((x.date||'')+'|'+x.last2)); }
+
+async function tryGLO(){
+ const attempts=[
+  ()=>fetch(GLO_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({page:1,pageSize:100})}),
+  ()=>fetch(GLO_ENDPOINT+'?page=1&pageSize=100',{headers:{'Accept':'application/json'}})
+ ];
+ for(const fn of attempts){
+  try{ const r=await fn(); if(!r.ok) continue; const j=await r.json(); const found=uniqueDraws(walk(j)); if(found.length>=10) return found.slice(0,100); }catch(e){}
+ }
+ throw new Error('GLO API ถูกบล็อกโดย CORS หรือรูปแบบ API เปลี่ยน');
+}
+async function loadLiveData(manual=false){
+ dataStatus.textContent='กำลังเชื่อมต่อ GLO API...';
+ try{
+  const live=await tryGLO(); draws=live; history=draws.map(x=>x.last2);
+  dataStatus.innerHTML=`<strong class="text-green-700">● เชื่อมต่อ GLO API สำเร็จ</strong> • ใช้ ${history.length} งวด`;
+ }catch(e){
+  draws=[...cachedDraws]; history=draws.map(x=>x.last2);
+  dataStatus.innerHTML=`<strong class="text-amber-700">● ใช้ข้อมูลสำรองจริง</strong> • ${history.length} งวด • ล่าสุด 16 ก.ย. 2569<br><span class="text-base text-slate-600">GLO API ไม่อนุญาตให้หน้าเว็บนี้เรียกตรงจากเบราว์เซอร์ หรือ API เปลี่ยนรูปแบบ ข้อมูลสำรองจึงถูกใช้แทน</span>`;
+ }
+ latestDraw.innerHTML=`งวดล่าสุดในชุดข้อมูล: <strong>${draws[0].date||'ล่าสุด'}</strong> • เลขท้าย 2 ตัว <strong class="text-2xl text-[#0b3a82]">${draws[0].last2}</strong>`;
+ renderTop(); if(!resultSection.classList.contains('hidden') && /^\d{2}$/.test(input.value)) analyze(input.value,false);
+}
 
 function calc(num){
-  const freq = history.filter(x => x === num).length;
-  const idx = history.indexOf(num);
-  const gap = idx === -1 ? history.length : idx;
-  const tens = num[0], ones = num[1];
-  const tensCount = history.filter(x => x[0] === tens).length;
-  const onesCount = history.filter(x => x[1] === ones).length;
-  const recent10 = history.slice(0,10).filter(x => x === num).length;
-
-  const frequencyScore = Math.min(40, Math.round((freq / 4) * 40));
-  const gapScore = Math.min(25, Math.round((gap / 15) * 25));
-  const digitScore = Math.min(20, Math.round(((tensCount + onesCount) / 12) * 20));
-  const recentScore = Math.min(15, recent10 * 15);
-  const score = Math.min(100, frequencyScore + gapScore + digitScore + recentScore);
-  return {num,freq,gap,tensCount,onesCount,recent10,frequencyScore,gapScore,digitScore,recentScore,score};
+ const n=history.length, freq=history.filter(x=>x===num).length, idx=history.indexOf(num), gap=idx===-1?n:idx;
+ const tens=num[0],ones=num[1],tensCount=history.filter(x=>x[0]===tens).length,onesCount=history.filter(x=>x[1]===ones).length;
+ const recentN=Math.min(10,n),recent10=history.slice(0,recentN).filter(x=>x===num).length;
+ // คะแนนเชิงเปรียบเทียบเท่านั้น: ปรับตามขนาดข้อมูล เพื่อไม่ผูกกับ 30 งวดตายตัว
+ const expectedPair=n/100, expectedDigit=n/10;
+ const frequencyScore=Math.min(40,Math.round((freq/Math.max(1,expectedPair*3))*40));
+ const gapScore=Math.min(25,Math.round((gap/Math.max(1,n/2))*25));
+ const digitRatio=((tensCount+onesCount)/2)/Math.max(1,expectedDigit);
+ const digitScore=Math.min(20,Math.round(Math.min(2,digitRatio)/2*20));
+ const recentScore=Math.min(15,recent10*15);
+ return {num,freq,gap,tensCount,onesCount,recent10,frequencyScore,gapScore,digitScore,recentScore,score:Math.min(100,frequencyScore+gapScore+digitScore+recentScore)};
 }
-
-function level(n, expected=3){
-  if(n >= expected + 2) return 'สูงกว่าค่าเฉลี่ย';
-  if(n <= Math.max(0, expected - 2)) return 'ต่ำกว่าค่าเฉลี่ย';
-  return 'ใกล้ค่าเฉลี่ย';
+function level(n){ const e=history.length/10; if(n>=e*1.25)return'สูงกว่าค่าเฉลี่ย';if(n<=e*.75)return'ต่ำกว่าค่าเฉลี่ย';return'ใกล้ค่าเฉลี่ย'; }
+function analyze(forced,scroll=true){
+ const num=(typeof forced==='string'?forced:input.value).trim();
+ if(!/^\d{2}$/.test(num)){errorText.textContent='กรุณากรอกตัวเลขให้ครบ 2 หลัก เช่น 07 หรือ 27';errorText.classList.remove('hidden');resultSection.classList.add('hidden');return;}
+ errorText.classList.add('hidden');input.value=num;const r=calc(num),n=history.length;
+ document.getElementById('resultNumber').textContent=num;document.getElementById('score').textContent=r.score;document.getElementById('scoreBar').style.width=r.score+'%';
+ document.getElementById('scoreLabel').textContent=r.score>=70?'คะแนนสถิติสูงในชุดข้อมูลนี้':r.score>=45?'คะแนนสถิติระดับกลาง':'คะแนนสถิติต่ำในชุดข้อมูลนี้';
+ document.getElementById('frequency').textContent=r.freq+' ครั้ง';document.getElementById('gap').textContent=r.gap>=n?`ไม่พบใน ${n} งวด`:r.gap===0?'งวดล่าสุด':r.gap+' งวด';
+ document.getElementById('tensFreq').textContent=r.tensCount+' ครั้ง • '+level(r.tensCount);document.getElementById('onesFreq').textContent=r.onesCount+' ครั้ง • '+level(r.onesCount);
+ document.getElementById('reasonRows').innerHTML=`<tr><td class="p-3 border border-slate-300">ความถี่ย้อนหลัง</td><td class="p-3 border border-slate-300">เลข ${num} พบ ${r.freq} ครั้งใน ${n} งวด</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.frequencyScore}/40</td></tr><tr class="bg-slate-50"><td class="p-3 border border-slate-300">ระยะห่าง</td><td class="p-3 border border-slate-300">${r.gap>=n?'ยังไม่พบในช่วงข้อมูล':`ผ่าน ${r.gap} งวดจากครั้งล่าสุด`}</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.gapScore}/25</td></tr><tr><td class="p-3 border border-slate-300">ตัวเลขรายหลัก</td><td class="p-3 border border-slate-300">หลักสิบ ${num[0]} พบ ${r.tensCount} ครั้ง • หลักหน่วย ${num[1]} พบ ${r.onesCount} ครั้ง</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.digitScore}/20</td></tr><tr class="bg-slate-50"><td class="p-3 border border-slate-300">10 งวดล่าสุด</td><td class="p-3 border border-slate-300">พบเลขตรงกัน ${r.recent10} ครั้ง</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.recentScore}/15</td></tr>`;
+ resultSection.classList.remove('hidden'); if(scroll)resultSection.scrollIntoView({behavior:'smooth',block:'start'});
 }
-
-function analyze(forced){
-  // เมื่อเรียกจาก addEventListener ตัวแปร forced จะเป็น Event ไม่ใช่เลข
-  // รับ forced เฉพาะกรณีที่ส่งเลขจากปุ่มอันดับเข้ามาเท่านั้น
-  const raw = (typeof forced === 'string') ? forced : input.value;
-  const num = raw.trim();
-  if(!/^\d{2}$/.test(num)){
-    errorText.textContent = 'กรุณากรอกตัวเลขให้ครบ 2 หลัก เช่น 07 หรือ 27';
-    errorText.classList.remove('hidden');
-    resultSection.classList.add('hidden');
-    return;
-  }
-  errorText.classList.add('hidden');
-  input.value = num;
-  const r = calc(num);
-  document.getElementById('resultNumber').textContent = num;
-  document.getElementById('score').textContent = r.score;
-  document.getElementById('scoreBar').style.width = r.score + '%';
-  document.getElementById('scoreLabel').textContent = r.score >= 70 ? 'เด่นในชุดข้อมูลนี้' : r.score >= 45 ? 'ระดับกลางในชุดข้อมูลนี้' : 'พบสัญญาณทางสถิติน้อย';
-  document.getElementById('frequency').textContent = r.freq + ' ครั้ง';
-  document.getElementById('gap').textContent = r.gap >= history.length ? 'ไม่พบใน 30 งวด' : r.gap === 0 ? 'งวดล่าสุด' : r.gap + ' งวด';
-  document.getElementById('tensFreq').textContent = r.tensCount + ' ครั้ง • ' + level(r.tensCount);
-  document.getElementById('onesFreq').textContent = r.onesCount + ' ครั้ง • ' + level(r.onesCount);
-  document.getElementById('reasonRows').innerHTML = `
-    <tr><td class="p-3 border border-slate-300">ความถี่ย้อนหลัง</td><td class="p-3 border border-slate-300">เลข ${num} พบ ${r.freq} ครั้งใน 30 งวด</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.frequencyScore}/40</td></tr>
-    <tr class="bg-slate-50"><td class="p-3 border border-slate-300">ระยะห่าง</td><td class="p-3 border border-slate-300">${r.gap >= history.length ? 'ยังไม่พบในชุดข้อมูล' : `ผ่าน ${r.gap} งวดจากครั้งล่าสุด`}</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.gapScore}/25</td></tr>
-    <tr><td class="p-3 border border-slate-300">ตัวเลขรายหลัก</td><td class="p-3 border border-slate-300">หลักสิบ ${num[0]} พบ ${r.tensCount} ครั้ง • หลักหน่วย ${num[1]} พบ ${r.onesCount} ครั้ง</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.digitScore}/20</td></tr>
-    <tr class="bg-slate-50"><td class="p-3 border border-slate-300">10 งวดล่าสุด</td><td class="p-3 border border-slate-300">พบเลขตรงกัน ${r.recent10} ครั้ง</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.recentScore}/15</td></tr>`;
-  resultSection.classList.remove('hidden');
-  resultSection.scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-function renderTop(){
-  const all = Array.from({length:100},(_,i)=>calc(String(i).padStart(2,'0'))).sort((a,b)=>b.score-a.score).slice(0,10);
-  document.getElementById('topNumbers').innerHTML = all.map((r,i)=>`<button onclick="analyze('${r.num}')" class="focus-ring text-left border-2 ${i<3?'border-[#0b3a82]':'border-slate-300'} bg-white hover:bg-blue-50 p-4 min-h-[94px]"><div class="text-3xl font-bold text-[#0b3a82]">${r.num}</div><div class="text-base mt-1">คะแนน ${r.score}/100</div></button>`).join('');
-}
-renderTop();
+function renderTop(){ const all=Array.from({length:100},(_,i)=>calc(String(i).padStart(2,'0'))).sort((a,b)=>b.score-a.score||a.num.localeCompare(b.num)).slice(0,10);document.getElementById('topNumbers').innerHTML=all.map((r,i)=>`<button onclick="analyze('${r.num}')" class="focus-ring text-left border-2 ${i<3?'border-[#0b3a82]':'border-slate-300'} bg-white hover:bg-blue-50 p-4 min-h-[94px]"><div class="text-3xl font-bold text-[#0b3a82]">${r.num}</div><div class="text-base mt-1">คะแนน ${r.score}/100</div></button>`).join(''); }
+loadLiveData();
 </script>
 </body>
 </html>
