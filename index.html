@@ -1,193 +1,48 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="เลขเล่าได้ - เครื่องมือวิเคราะห์สถิติเลขท้าย 2 ตัวจากข้อมูลย้อนหลัง เพื่อประกอบการตัดสินใจ" />
-  <title>เลขเล่าได้ | วิเคราะห์สถิติเลขท้าย 2 ตัว</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Tahoma','Arial','sans-serif'] } } } }
-  </script>
-  <style>
-    * { border-radius: 0 !important; }
-    body { background:#f7f9fc; color:#172033; }
-    .focus-ring:focus { outline: 4px solid #facc15; outline-offset: 2px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="เลขเล่าได้ V3 วิเคราะห์สถิติเลขสลาก 6 หลัก เลขหน้า 3 ตัว เลขท้าย 3 ตัว และเลขท้าย 2 ตัว แยกตามประเภทรางวัล">
+<title>เลขเล่าได้ V3 | วิเคราะห์เลขสลากทุกหลัก</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fc;color:#172033;font:17px/1.65 Tahoma,Arial,sans-serif}header,footer{background:#0b3a82;color:white;padding:24px;border-bottom:4px solid #f4c430}.wrap{max-width:1060px;margin:auto}main{padding:24px 16px}h1,h2,h3,p{margin:0 0 12px}h1{font-size:28px}h2{font-size:23px}h3{font-size:18px}.panel{background:white;border:1px solid #cbd5e1;padding:24px;margin-bottom:22px}.muted{color:#526175}.notice{background:#fff8dc;border-left:5px solid #c38a00;padding:14px;margin:16px 0}.modes,.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.modes{margin:24px 0}button,input,textarea{font:inherit}button{cursor:pointer;background:white;border:2px solid #0b3a82;color:#0b3a82;padding:12px;font-weight:bold}button[aria-pressed="true"],.primary{background:#0b3a82;color:white}button:hover{filter:brightness(.92)}:focus-visible{outline:4px solid #e4ad00;outline-offset:3px}input[type=text]{width:100%;padding:14px;border:2px solid #62748b;font-size:32px;letter-spacing:.18em}.entry{display:grid;grid-template-columns:1fr 180px;gap:12px;align-items:end}label{display:block;font-weight:bold}.hidden{display:none!important}.error{color:#a11212;background:#fff0f0;padding:12px;margin-top:12px}.card{border:1px solid #cbd5e1;padding:16px;min-width:0}.number{font-size:30px;font-weight:bold;color:#0b3a82;overflow-wrap:anywhere}.score{font-size:23px;font-weight:bold}.bar{height:8px;background:#e2e8f0;margin:12px 0}.fill{height:100%;background:#0b3a82}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap}th,td{padding:10px;border:1px solid #cbd5e1;text-align:left}th{background:#eaf2ff}.positions{grid-template-columns:repeat(3,minmax(0,1fr))}small{font-size:14px}.top{display:flex;flex-wrap:wrap;gap:10px}.top button{min-width:110px}textarea{width:100%;min-height:190px;margin:12px 0;padding:12px}summary{cursor:pointer;font-weight:bold}code{overflow-wrap:anywhere}footer{font-size:14px;margin-top:20px;border:0}#dataStatus{white-space:pre-line}@media(max-width:700px){.grid,.modes,.positions{grid-template-columns:repeat(2,minmax(0,1fr))}.entry{grid-template-columns:1fr}.panel{padding:16px}h1{font-size:24px}}@media(max-width:380px){.grid,.positions{grid-template-columns:1fr}}
+</style>
+<script src="app.js" defer></script>
 </head>
-<body class="font-sans min-h-screen">
-  <header class="bg-[#0b3a82] text-white border-b-4 border-[#f4c430]">
-    <div class="max-w-5xl mx-auto px-4 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-      <div>
-        <div class="text-3xl font-bold tracking-tight">เลขเล่าได้</div>
-        <div class="text-base md:text-lg text-blue-100 mt-1">ดูสถิติย้อนหลังให้เข้าใจง่าย ก่อนตัดสินใจ</div>
-      </div>
-      <div class="border border-blue-200 px-4 py-2 text-base bg-[#082f6b]">V1 • เลขท้าย 2 ตัว</div>
-    </div>
-  </header>
-
-  <main class="max-w-5xl mx-auto px-4 py-6 md:py-8">
-    <section class="bg-white border-2 border-slate-300 p-5 md:p-7">
-      <h1 class="text-2xl md:text-3xl font-bold text-[#0b3a82]">ลองวิเคราะห์เลขที่คุณสนใจ</h1>
-      <p class="mt-2 text-lg leading-8 text-slate-700">กรอกเลข 2 ตัว เช่น 27 ระบบจะแสดง “คะแนนสถิติ” จากข้อมูลตัวอย่างย้อนหลัง พร้อมบอกที่มาของคะแนนแบบอ่านง่าย</p>
-
-      <div class="mt-6 grid md:grid-cols-[1fr_220px] gap-3">
-        <label class="block">
-          <span class="block text-lg font-bold mb-2">เลข 2 ตัว</span>
-          <input id="numberInput" inputmode="numeric" maxlength="2" placeholder="เช่น 27" class="focus-ring w-full border-2 border-slate-500 px-4 py-4 text-3xl font-bold tracking-[0.3em] bg-white" />
-        </label>
-        <button id="analyzeBtn" class="focus-ring md:self-end bg-[#0b3a82] hover:bg-[#082f6b] active:bg-[#061f48] text-white text-xl font-bold px-5 py-4 min-h-[68px]">วิเคราะห์เลข</button>
-      </div>
-      <p id="errorText" class="hidden mt-3 border-l-8 border-red-600 bg-red-50 px-4 py-3 text-lg font-bold text-red-800" role="alert"></p>
-    </section>
-
-    <section id="resultSection" class="hidden mt-6 bg-white border-2 border-slate-300">
-      <div class="bg-[#eaf2ff] border-b-2 border-slate-300 px-5 py-4">
-        <div class="text-lg text-slate-700">ผลวิเคราะห์</div>
-        <div class="flex items-end gap-3 mt-1">
-          <span class="text-5xl font-bold text-[#0b3a82]" id="resultNumber">27</span>
-          <span class="text-xl mb-1">คะแนนสถิติ</span>
-        </div>
-      </div>
-
-      <div class="p-5 md:p-7 grid lg:grid-cols-[280px_1fr] gap-7">
-        <div class="border-2 border-[#0b3a82] p-5 text-center">
-          <div class="text-lg font-bold">คะแนนจากข้อมูลย้อนหลัง</div>
-          <div class="text-6xl font-bold text-[#0b3a82] mt-3"><span id="score">0</span><span class="text-2xl text-slate-500">/100</span></div>
-          <div class="h-5 border-2 border-slate-500 mt-5 bg-slate-100">
-            <div id="scoreBar" class="h-full bg-[#0b3a82]" style="width:0%"></div>
-          </div>
-          <div id="scoreLabel" class="mt-3 text-lg font-bold"></div>
-        </div>
-
-        <div>
-          <h2 class="text-2xl font-bold text-[#0b3a82]">ข้อมูลที่ใช้ประกอบคะแนน</h2>
-          <div class="mt-4 border-t-2 border-slate-300">
-            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>พบใน 30 งวดตัวอย่าง</span><strong class="text-right" id="frequency">0 ครั้ง</strong></div>
-            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>ห่างจากครั้งล่าสุด</span><strong class="text-right" id="gap">-</strong></div>
-            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>ความถี่เลขหลักสิบ</span><strong class="text-right" id="tensFreq">-</strong></div>
-            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>ความถี่เลขหลักหน่วย</span><strong class="text-right" id="onesFreq">-</strong></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="px-5 md:px-7 pb-7">
-        <h2 class="text-2xl font-bold text-[#0b3a82]">ทำไมได้คะแนนนี้?</h2>
-        <div class="mt-4 overflow-x-auto">
-          <table class="w-full border-collapse text-lg min-w-[620px]">
-            <thead><tr class="bg-[#0b3a82] text-white"><th class="text-left p-3 border border-slate-400">หัวข้อ</th><th class="text-left p-3 border border-slate-400">สิ่งที่พบ</th><th class="text-right p-3 border border-slate-400">คะแนน</th></tr></thead>
-            <tbody id="reasonRows"></tbody>
-          </table>
-        </div>
-        <div class="mt-5 border-l-8 border-[#f4c430] bg-yellow-50 px-4 py-4 text-lg leading-7">
-          <strong>สำคัญ:</strong> คะแนนนี้เป็นคะแนนที่เว็บสร้างจากสถิติย้อนหลัง ไม่ใช่เปอร์เซ็นต์โอกาสถูกรางวัล และไม่ได้หมายความว่าเลขที่เคยออกบ่อยจะต้องออกอีก
-        </div>
-      </div>
-    </section>
-
-    <section class="mt-6 bg-white border-2 border-slate-300 p-5 md:p-7">
-      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
-        <div><h2 class="text-2xl font-bold text-[#0b3a82]">เลขที่เด่นในชุดข้อมูลตัวอย่าง</h2><p class="text-lg mt-1 text-slate-600">กดที่เลขเพื่อดูรายละเอียดได้ทันที</p></div>
-        <span class="text-base bg-slate-100 border border-slate-300 px-3 py-2">เรียงตามคะแนนสถิติ</span>
-      </div>
-      <div id="topNumbers" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-5"></div>
-    </section>
-
-    <section class="mt-6 grid md:grid-cols-2 gap-6">
-      <div class="bg-white border-2 border-slate-300 p-5 md:p-6">
-        <h2 class="text-xl font-bold text-[#0b3a82]">สูตรคะแนน V1</h2>
-        <div class="text-lg leading-8 mt-3">
-          <div>ความถี่ย้อนหลัง <strong>40 คะแนน</strong></div>
-          <div>ระยะห่างจากครั้งล่าสุด <strong>25 คะแนน</strong></div>
-          <div>ความถี่ตัวเลขรายหลัก <strong>20 คะแนน</strong></div>
-          <div>แนวโน้มช่วงล่าสุด <strong>15 คะแนน</strong></div>
-        </div>
-      </div>
-      <div class="bg-white border-2 border-slate-300 p-5 md:p-6">
-        <h2 class="text-xl font-bold text-[#0b3a82]">แหล่งข้อมูลสำหรับเวอร์ชันจริง</h2>
-        <p class="text-lg leading-8 mt-3">V1 นี้ใช้ชุดข้อมูลจำลองในไฟล์เพื่อให้ทดลองหน้าเว็บได้ทันที เวอร์ชันถัดไปควรเชื่อมข้อมูลผลรางวัลจากสำนักงานสลากกินแบ่งรัฐบาล และแสดงวันที่อัปเดตทุกครั้ง</p>
-        <a class="focus-ring inline-block mt-3 text-lg font-bold text-[#0b3a82] underline" href="https://gdcatalog.glo.or.th/dataset/dataset_c4-9_01" target="_blank" rel="noopener">ดู GLO Open Data</a>
-      </div>
-    </section>
-  </main>
-
-  <footer class="mt-8 bg-[#10223f] text-white border-t-4 border-[#f4c430]">
-    <div class="max-w-5xl mx-auto px-4 py-6 text-base leading-7">
-      <strong>เลขเล่าได้</strong> เป็นเครื่องมือสรุปข้อมูลเชิงสถิติ ไม่ใช่บริการรับประกันผลรางวัล โปรดใช้ข้อมูลอย่างมีวิจารณญาณและกำหนดงบประมาณที่รับความเสี่ยงได้
-    </div>
-  </footer>
-
-<script>
-// DEMO DATA: เลขท้าย 2 ตัวจำลอง 30 งวด เรียงจากใหม่ -> เก่า
-const history = ['06','94','51','27','87','79','61','32','09','90','21','46','43','89','14','85','31','91','62','37','05','99','58','16','81','27','44','73','27','20'];
-
-const input = document.getElementById('numberInput');
-const resultSection = document.getElementById('resultSection');
-const errorText = document.getElementById('errorText');
-
-input.addEventListener('input', () => input.value = input.value.replace(/\D/g,'').slice(0,2));
-input.addEventListener('keydown', e => { if(e.key === 'Enter') analyze(); });
-document.getElementById('analyzeBtn').addEventListener('click', analyze);
-
-function calc(num){
-  const freq = history.filter(x => x === num).length;
-  const idx = history.indexOf(num);
-  const gap = idx === -1 ? history.length : idx;
-  const tens = num[0], ones = num[1];
-  const tensCount = history.filter(x => x[0] === tens).length;
-  const onesCount = history.filter(x => x[1] === ones).length;
-  const recent10 = history.slice(0,10).filter(x => x === num).length;
-
-  const frequencyScore = Math.min(40, Math.round((freq / 4) * 40));
-  const gapScore = Math.min(25, Math.round((gap / 15) * 25));
-  const digitScore = Math.min(20, Math.round(((tensCount + onesCount) / 12) * 20));
-  const recentScore = Math.min(15, recent10 * 15);
-  const score = Math.min(100, frequencyScore + gapScore + digitScore + recentScore);
-  return {num,freq,gap,tensCount,onesCount,recent10,frequencyScore,gapScore,digitScore,recentScore,score};
-}
-
-function level(n, expected=3){
-  if(n >= expected + 2) return 'สูงกว่าค่าเฉลี่ย';
-  if(n <= Math.max(0, expected - 2)) return 'ต่ำกว่าค่าเฉลี่ย';
-  return 'ใกล้ค่าเฉลี่ย';
-}
-
-function analyze(forced){
-  // เมื่อเรียกจาก addEventListener ตัวแปร forced จะเป็น Event ไม่ใช่เลข
-  // รับ forced เฉพาะกรณีที่ส่งเลขจากปุ่มอันดับเข้ามาเท่านั้น
-  const raw = (typeof forced === 'string') ? forced : input.value;
-  const num = raw.trim();
-  if(!/^\d{2}$/.test(num)){
-    errorText.textContent = 'กรุณากรอกตัวเลขให้ครบ 2 หลัก เช่น 07 หรือ 27';
-    errorText.classList.remove('hidden');
-    resultSection.classList.add('hidden');
-    return;
-  }
-  errorText.classList.add('hidden');
-  input.value = num;
-  const r = calc(num);
-  document.getElementById('resultNumber').textContent = num;
-  document.getElementById('score').textContent = r.score;
-  document.getElementById('scoreBar').style.width = r.score + '%';
-  document.getElementById('scoreLabel').textContent = r.score >= 70 ? 'เด่นในชุดข้อมูลนี้' : r.score >= 45 ? 'ระดับกลางในชุดข้อมูลนี้' : 'พบสัญญาณทางสถิติน้อย';
-  document.getElementById('frequency').textContent = r.freq + ' ครั้ง';
-  document.getElementById('gap').textContent = r.gap >= history.length ? 'ไม่พบใน 30 งวด' : r.gap === 0 ? 'งวดล่าสุด' : r.gap + ' งวด';
-  document.getElementById('tensFreq').textContent = r.tensCount + ' ครั้ง • ' + level(r.tensCount);
-  document.getElementById('onesFreq').textContent = r.onesCount + ' ครั้ง • ' + level(r.onesCount);
-  document.getElementById('reasonRows').innerHTML = `
-    <tr><td class="p-3 border border-slate-300">ความถี่ย้อนหลัง</td><td class="p-3 border border-slate-300">เลข ${num} พบ ${r.freq} ครั้งใน 30 งวด</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.frequencyScore}/40</td></tr>
-    <tr class="bg-slate-50"><td class="p-3 border border-slate-300">ระยะห่าง</td><td class="p-3 border border-slate-300">${r.gap >= history.length ? 'ยังไม่พบในชุดข้อมูล' : `ผ่าน ${r.gap} งวดจากครั้งล่าสุด`}</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.gapScore}/25</td></tr>
-    <tr><td class="p-3 border border-slate-300">ตัวเลขรายหลัก</td><td class="p-3 border border-slate-300">หลักสิบ ${num[0]} พบ ${r.tensCount} ครั้ง • หลักหน่วย ${num[1]} พบ ${r.onesCount} ครั้ง</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.digitScore}/20</td></tr>
-    <tr class="bg-slate-50"><td class="p-3 border border-slate-300">10 งวดล่าสุด</td><td class="p-3 border border-slate-300">พบเลขตรงกัน ${r.recent10} ครั้ง</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.recentScore}/15</td></tr>`;
-  resultSection.classList.remove('hidden');
-  resultSection.scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-function renderTop(){
-  const all = Array.from({length:100},(_,i)=>calc(String(i).padStart(2,'0'))).sort((a,b)=>b.score-a.score).slice(0,10);
-  document.getElementById('topNumbers').innerHTML = all.map((r,i)=>`<button onclick="analyze('${r.num}')" class="focus-ring text-left border-2 ${i<3?'border-[#0b3a82]':'border-slate-300'} bg-white hover:bg-blue-50 p-4 min-h-[94px]"><div class="text-3xl font-bold text-[#0b3a82]">${r.num}</div><div class="text-base mt-1">คะแนน ${r.score}/100</div></button>`).join('');
-}
-renderTop();
-</script>
-</body>
-</html>
+<body>
+<header><div class="wrap"><h1>เลขเล่าได้ <small>V3</small></h1><p>กรอกเลขสลากครั้งเดียว ดูสถิติย้อนหลังครบทุกส่วน</p></div></header>
+<main class="wrap">
+<section class="panel">
+<h2>วิเคราะห์เลขงวดถัดไป</h2>
+<p class="muted">แยกข้อมูลรางวัลที่ 1 เลขหน้า 3 ตัว เลขท้าย 3 ตัว และเลขท้าย 2 ตัวออกจากกัน</p>
+<div id="dataStatus" class="notice" role="status"></div>
+<div class="modes" role="group" aria-label="ประเภทที่วิเคราะห์">
+<button type="button" data-mode="first" aria-pressed="true">เลข 6 หลัก</button>
+<button type="button" data-mode="front3" aria-pressed="false">เลขหน้า 3 ตัว</button>
+<button type="button" data-mode="back3" aria-pressed="false">เลขท้าย 3 ตัว</button>
+<button type="button" data-mode="last2" aria-pressed="false">เลขท้าย 2 ตัว</button>
+</div>
+<form id="analysisForm" novalidate><div class="entry"><label for="numberInput"><span id="inputLabel">เลขสลาก 6 หลัก</span><input type="text" id="numberInput" inputmode="numeric" maxlength="6" placeholder="เช่น 381527" autocomplete="off" aria-describedby="errorText"></label><button class="primary" type="submit">วิเคราะห์</button></div></form>
+<p id="errorText" class="error hidden" role="alert"></p>
+</section>
+<section id="resultSection" class="panel hidden" aria-live="polite">
+<h2 id="resultTitle"></h2><p id="resultSource" class="muted"></p>
+<div id="summaryCards" class="grid"></div>
+<p class="notice">คะแนนจากสถิติย้อนหลัง ไม่ใช่เปอร์เซ็นต์โอกาสถูกรางวัล และไม่สามารถทำนายผลในงวดถัดไปได้</p>
+<h2 id="positionTitle">รูปแบบรายหลัก</h2><p id="positionHelp" class="muted"></p><div id="positionStats" class="grid positions"></div>
+<h3 style="margin-top:24px">ที่มาของคะแนน</h3><div class="table-wrap"><table><thead><tr><th>ประเภทรางวัล</th><th>เลขตรง / 40</th><th>ความถี่รายหลัก / 40</th><th>10 งวดล่าสุด / 20</th><th>รวม / 100</th></tr></thead><tbody id="reasonRows"></tbody></table></div>
+<p class="muted"><small>เลขตรง: สัดส่วนงวดที่พบเลข × 40 · รายหลัก: ค่าเฉลี่ยสัดส่วนเลขที่ตรงในแต่ละตำแหน่ง × 40 · ช่วงล่าสุด: สัดส่วนงวดที่พบเลขในไม่เกิน 10 งวดล่าสุด × 20 ปัดคะแนนรวมเป็นทศนิยม 1 ตำแหน่ง ไม่เพิ่มคะแนนเพียงเพราะเลขไม่ออกนาน และไม่ควรเปรียบเทียบคะแนนข้ามประเภทรางวัล</small></p>
+<p class="muted"><small>โหมด 6 หลักใช้รางวัลที่ 1 สำหรับสถิติรายหลัก ส่วนเลขที่แตกออกมาใช้ประวัติรางวัลประเภทนั้นโดยตรง หน้านี้ไม่ใช่ระบบตรวจรางวัลทั้งหมดหรือรางวัลข้างเคียง</small></p>
+</section>
+<section class="panel"><h2>เลขที่พบในข้อมูลย้อนหลังของโหมดนี้</h2><p class="muted">แสดงสูงสุด 10 เลขที่เคยพบ เรียงตามคะแนน กดเพื่อวิเคราะห์</p><div id="topNumbers" class="top"></div></section>
+<section class="panel"><details><summary>ข้อมูลย้อนหลังและการนำเข้าข้อมูลจริง</summary>
+<p>เริ่มต้นด้วยข้อมูลจำลองสำหรับทดลองเท่านั้น หากมีผลรางวัลย้อนหลัง ให้นำเข้าไฟล์ JSON หรือวางข้อมูลด้านล่าง ชุดใหม่จะใช้แทนข้อมูลจำลองทั้งหมด โดยไม่เติมรางวัลที่ขาดด้วยข้อมูลจำลอง</p>
+<p>แต่ละงวดใช้วันที่ ค.ศ. แบบ YYYY-MM-DD ไม่ซ้ำกัน และเก็บเลขเป็นข้อความเพื่อรักษาเลขศูนย์นำหน้า: <code>first</code> 6 หลัก, <code>front3</code> และ <code>back3</code> อย่างละ 2 เลข, <code>last2</code> 2 หลัก สามารถละประเภทที่ไม่มีข้อมูลได้</p>
+<label for="dataFile">ไฟล์ JSON</label><input id="dataFile" type="file" accept=".json,application/json">
+<label for="dataInput">ข้อมูล JSON</label><textarea id="dataInput" spellcheck="false" placeholder='{"source":"ชื่อแหล่งข้อมูล","draws":[{"date":"2025-01-02","first":"381527","front3":["381","004"],"back3":["527","009"],"last2":"27"}]}'></textarea>
+<button id="importBtn" type="button">นำเข้าข้อมูล</button> <button id="demoBtn" type="button">กลับไปใช้ข้อมูลจำลอง</button>
+<p id="importStatus" role="status"></p><p class="muted">ข้อมูลนำเข้าใช้เฉพาะหน้านี้ เมื่อรีเฟรชจะกลับเป็นข้อมูลจำลอง ระบบไม่ได้ดึงหรือยืนยันผลรางวัลจริงอัตโนมัติ</p>
+</details></section>
+</main><footer><div class="wrap">เลขเล่าได้ • เครื่องมือสรุปสถิติย้อนหลัง ไม่รับประกันผลรางวัล</div></footer>
+</body></html>
