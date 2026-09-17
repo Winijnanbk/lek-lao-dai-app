@@ -1,48 +1,31 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="เลขเล่าได้ V3 วิเคราะห์สถิติเลขสลาก 6 หลัก เลขหน้า 3 ตัว เลขท้าย 3 ตัว และเลขท้าย 2 ตัว แยกตามประเภทรางวัล">
-<title>เลขเล่าได้ V3 | วิเคราะห์เลขสลากทุกหลัก</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#f5f7fc;color:#172033;font:17px/1.65 Tahoma,Arial,sans-serif}header,footer{background:#0b3a82;color:white;padding:24px;border-bottom:4px solid #f4c430}.wrap{max-width:1060px;margin:auto}main{padding:24px 16px}h1,h2,h3,p{margin:0 0 12px}h1{font-size:28px}h2{font-size:23px}h3{font-size:18px}.panel{background:white;border:1px solid #cbd5e1;padding:24px;margin-bottom:22px}.muted{color:#526175}.notice{background:#fff8dc;border-left:5px solid #c38a00;padding:14px;margin:16px 0}.modes,.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.modes{margin:24px 0}button,input,textarea{font:inherit}button{cursor:pointer;background:white;border:2px solid #0b3a82;color:#0b3a82;padding:12px;font-weight:bold}button[aria-pressed="true"],.primary{background:#0b3a82;color:white}button:hover{filter:brightness(.92)}:focus-visible{outline:4px solid #e4ad00;outline-offset:3px}input[type=text]{width:100%;padding:14px;border:2px solid #62748b;font-size:32px;letter-spacing:.18em}.entry{display:grid;grid-template-columns:1fr 180px;gap:12px;align-items:end}label{display:block;font-weight:bold}.hidden{display:none!important}.error{color:#a11212;background:#fff0f0;padding:12px;margin-top:12px}.card{border:1px solid #cbd5e1;padding:16px;min-width:0}.number{font-size:30px;font-weight:bold;color:#0b3a82;overflow-wrap:anywhere}.score{font-size:23px;font-weight:bold}.bar{height:8px;background:#e2e8f0;margin:12px 0}.fill{height:100%;background:#0b3a82}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap}th,td{padding:10px;border:1px solid #cbd5e1;text-align:left}th{background:#eaf2ff}.positions{grid-template-columns:repeat(3,minmax(0,1fr))}small{font-size:14px}.top{display:flex;flex-wrap:wrap;gap:10px}.top button{min-width:110px}textarea{width:100%;min-height:190px;margin:12px 0;padding:12px}summary{cursor:pointer;font-weight:bold}code{overflow-wrap:anywhere}footer{font-size:14px;margin-top:20px;border:0}#dataStatus{white-space:pre-line}@media(max-width:700px){.grid,.modes,.positions{grid-template-columns:repeat(2,minmax(0,1fr))}.entry{grid-template-columns:1fr}.panel{padding:16px}h1{font-size:24px}}@media(max-width:380px){.grid,.positions{grid-template-columns:1fr}}
-</style>
-<script src="app.js" defer></script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123e49"><meta name="description" content="ดูสถิติเลขสลากจากผลย้อนหลังจริงของสำนักงานสลากกินแบ่งรัฐบาล วิเคราะห์เลข 6 หลักและเลขหน้า–ท้าย ใช้ง่ายบนมือถือ">
+<title>เลขเล่าได้ | สถิติจากผลสลากจริง</title>
+<link rel="stylesheet" href="styles.css">
+<script src="lottery-core.js" defer></script><script src="app.js" defer></script>
 </head>
 <body>
-<header><div class="wrap"><h1>เลขเล่าได้ <small>V3</small></h1><p>กรอกเลขสลากครั้งเดียว ดูสถิติย้อนหลังครบทุกส่วน</p></div></header>
+<a class="skip" href="#numberInput">ข้ามไปกรอกเลข</a>
+<header><div class="wrap brand"><div><strong>เลขเล่าได้<span class="brand-dot">.</span></strong><p>รู้จักเลขของคุณ ผ่านผลสลากย้อนหลัง</p></div><span class="version">V3 · ข้อมูลจริง</span></div></header>
 <main class="wrap">
-<section class="panel">
-<h2>วิเคราะห์เลขงวดถัดไป</h2>
-<p class="muted">แยกข้อมูลรางวัลที่ 1 เลขหน้า 3 ตัว เลขท้าย 3 ตัว และเลขท้าย 2 ตัวออกจากกัน</p>
-<div id="dataStatus" class="notice" role="status"></div>
-<div class="modes" role="group" aria-label="ประเภทที่วิเคราะห์">
-<button type="button" data-mode="first" aria-pressed="true">เลข 6 หลัก</button>
-<button type="button" data-mode="front3" aria-pressed="false">เลขหน้า 3 ตัว</button>
-<button type="button" data-mode="back3" aria-pressed="false">เลขท้าย 3 ตัว</button>
-<button type="button" data-mode="last2" aria-pressed="false">เลขท้าย 2 ตัว</button>
-</div>
-<form id="analysisForm" novalidate><div class="entry"><label for="numberInput"><span id="inputLabel">เลขสลาก 6 หลัก</span><input type="text" id="numberInput" inputmode="numeric" maxlength="6" placeholder="เช่น 381527" autocomplete="off" aria-describedby="errorText"></label><button class="primary" type="submit">วิเคราะห์</button></div></form>
-<p id="errorText" class="error hidden" role="alert"></p>
+<section class="data-panel" aria-labelledby="dataHeading">
+<div class="section-heading"><div><span class="eyebrow">ผลสลากกินแบ่งรัฐบาล</span><h2 id="dataHeading">กำลังเปิดข้อมูลผลสลาก</h2></div><button id="refreshBtn" type="button" class="secondary">อัปเดตผลหวย</button></div>
+<p id="dataStatus" class="status" role="status" aria-live="polite">กำลังโหลดข้อมูล กรุณารอสักครู่…</p>
+<div id="latestResults" class="latest-grid"></div>
+<details class="source-details"><summary>ข้อมูลมาจากไหน?</summary><p>ตัวเลขทั้งหมดดึงจากสำนักงานสลากกินแบ่งรัฐบาล ระบบตรวจข้อมูลใหม่อัตโนมัติวันละ 2 ครั้ง ปุ่มอัปเดตจะเปิดข้อมูลชุดล่าสุดที่ระบบเตรียมไว้</p><p id="checkedAt"></p><a href="https://www.glo.or.th/" target="_blank" rel="noopener noreferrer">ดูเว็บไซต์สำนักงานสลากฯ ↗</a></details>
 </section>
-<section id="resultSection" class="panel hidden" aria-live="polite">
-<h2 id="resultTitle"></h2><p id="resultSource" class="muted"></p>
-<div id="summaryCards" class="grid"></div>
-<p class="notice">คะแนนจากสถิติย้อนหลัง ไม่ใช่เปอร์เซ็นต์โอกาสถูกรางวัล และไม่สามารถทำนายผลในงวดถัดไปได้</p>
-<h2 id="positionTitle">รูปแบบรายหลัก</h2><p id="positionHelp" class="muted"></p><div id="positionStats" class="grid positions"></div>
-<h3 style="margin-top:24px">ที่มาของคะแนน</h3><div class="table-wrap"><table><thead><tr><th>ประเภทรางวัล</th><th>เลขตรง / 40</th><th>ความถี่รายหลัก / 40</th><th>10 งวดล่าสุด / 20</th><th>รวม / 100</th></tr></thead><tbody id="reasonRows"></tbody></table></div>
-<p class="muted"><small>เลขตรง: สัดส่วนงวดที่พบเลข × 40 · รายหลัก: ค่าเฉลี่ยสัดส่วนเลขที่ตรงในแต่ละตำแหน่ง × 40 · ช่วงล่าสุด: สัดส่วนงวดที่พบเลขในไม่เกิน 10 งวดล่าสุด × 20 ปัดคะแนนรวมเป็นทศนิยม 1 ตำแหน่ง ไม่เพิ่มคะแนนเพียงเพราะเลขไม่ออกนาน และไม่ควรเปรียบเทียบคะแนนข้ามประเภทรางวัล</small></p>
-<p class="muted"><small>โหมด 6 หลักใช้รางวัลที่ 1 สำหรับสถิติรายหลัก ส่วนเลขที่แตกออกมาใช้ประวัติรางวัลประเภทนั้นโดยตรง หน้านี้ไม่ใช่ระบบตรวจรางวัลทั้งหมดหรือรางวัลข้างเคียง</small></p>
+<section class="panel input-panel" aria-labelledby="entryHeading">
+<span class="eyebrow">เริ่มต้นที่เลขของคุณ</span><h1 id="entryHeading">กรอกเลขสลาก ดูสถิติทุกส่วน</h1><p class="muted">เลือกเลข 6 หลัก เพื่อดูทั้งเลขหน้าและเลขท้ายในครั้งเดียว</p>
+<div class="modes" role="group" aria-label="เลือกประเภทเลข"><button type="button" data-mode="first" aria-pressed="true">เลข 6 หลัก<small>ดูครบทุกส่วน</small></button><button type="button" data-mode="front3" aria-pressed="false">เลขหน้า 3 ตัว</button><button type="button" data-mode="back3" aria-pressed="false">เลขท้าย 3 ตัว</button><button type="button" data-mode="last2" aria-pressed="false">เลขท้าย 2 ตัว</button></div>
+<form id="analysisForm" novalidate><label for="numberInput" id="inputLabel">เลขสลาก 6 หลัก</label><div class="entry"><div class="input-wrap"><input type="text" id="numberInput" inputmode="numeric" maxlength="6" placeholder="เช่น 381527" autocomplete="off" enterkeyhint="go" aria-describedby="inputHelp errorText"><button type="button" id="clearBtn" aria-label="ล้างเลขที่กรอก">ล้าง</button></div><button type="submit" id="analyzeBtn" class="primary" disabled>ดูสถิติของเลขนี้</button></div><p id="inputHelp" class="muted helper">ใส่เลขได้ครบ 6 หลัก รวมเลข 0 ที่อยู่ด้านหน้า</p><p id="errorText" class="error hidden" role="alert"></p></form>
 </section>
-<section class="panel"><h2>เลขที่พบในข้อมูลย้อนหลังของโหมดนี้</h2><p class="muted">แสดงสูงสุด 10 เลขที่เคยพบ เรียงตามคะแนน กดเพื่อวิเคราะห์</p><div id="topNumbers" class="top"></div></section>
-<section class="panel"><details><summary>ข้อมูลย้อนหลังและการนำเข้าข้อมูลจริง</summary>
-<p>เริ่มต้นด้วยข้อมูลจำลองสำหรับทดลองเท่านั้น หากมีผลรางวัลย้อนหลัง ให้นำเข้าไฟล์ JSON หรือวางข้อมูลด้านล่าง ชุดใหม่จะใช้แทนข้อมูลจำลองทั้งหมด โดยไม่เติมรางวัลที่ขาดด้วยข้อมูลจำลอง</p>
-<p>แต่ละงวดใช้วันที่ ค.ศ. แบบ YYYY-MM-DD ไม่ซ้ำกัน และเก็บเลขเป็นข้อความเพื่อรักษาเลขศูนย์นำหน้า: <code>first</code> 6 หลัก, <code>front3</code> และ <code>back3</code> อย่างละ 2 เลข, <code>last2</code> 2 หลัก สามารถละประเภทที่ไม่มีข้อมูลได้</p>
-<label for="dataFile">ไฟล์ JSON</label><input id="dataFile" type="file" accept=".json,application/json">
-<label for="dataInput">ข้อมูล JSON</label><textarea id="dataInput" spellcheck="false" placeholder='{"source":"ชื่อแหล่งข้อมูล","draws":[{"date":"2025-01-02","first":"381527","front3":["381","004"],"back3":["527","009"],"last2":"27"}]}'></textarea>
-<button id="importBtn" type="button">นำเข้าข้อมูล</button> <button id="demoBtn" type="button">กลับไปใช้ข้อมูลจำลอง</button>
-<p id="importStatus" role="status"></p><p class="muted">ข้อมูลนำเข้าใช้เฉพาะหน้านี้ เมื่อรีเฟรชจะกลับเป็นข้อมูลจำลอง ระบบไม่ได้ดึงหรือยืนยันผลรางวัลจริงอัตโนมัติ</p>
-</details></section>
-</main><footer><div class="wrap">เลขเล่าได้ • เครื่องมือสรุปสถิติย้อนหลัง ไม่รับประกันผลรางวัล</div></footer>
+<section id="resultSection" class="panel hidden" aria-labelledby="resultTitle"><span class="eyebrow">เลขของคุณเล่าอะไรบ้าง</span><h2 id="resultTitle" tabindex="-1"></h2><p id="resultSource" class="muted"></p><div id="summaryCards" class="summary-grid"></div><p class="notice">สถิติบอกสิ่งที่เคยเกิดขึ้น ไม่ได้บอกว่าเลขใดจะออกงวดหน้า คะแนนไม่ใช่เปอร์เซ็นต์โอกาสถูกรางวัล</p><h2 id="positionTitle"></h2><p id="positionHelp" class="muted"></p><div id="positionStats" class="positions"></div>
+<details class="method"><summary>คะแนนคิดอย่างไร?</summary><p>ใช้สัดส่วนงวดที่พบเลขตรง (40 คะแนน) ความถี่เฉลี่ยของเลขในแต่ละหลัก (40 คะแนน) และสัดส่วนงวดที่พบใน 10 งวดล่าสุด (20 คะแนน) ไม่เพิ่มคะแนนเพราะเลขไม่ออกนาน</p><div class="table-wrap" tabindex="0" role="region" aria-label="ตารางที่มาของคะแนน เลื่อนซ้ายขวาได้"><table><thead><tr><th>รางวัล</th><th>เลขตรง /40</th><th>รายหลัก /40</th><th>ล่าสุด /20</th><th>รวม /100</th></tr></thead><tbody id="reasonRows"></tbody></table></div><p>คำนวณแต่ละรางวัลแยกกัน ไม่ควรเทียบคะแนนข้ามประเภทรางวัล หน้านี้ไม่ใช่การตรวจสลากครบทุกประเภทรางวัล</p></details>
+</section>
+<section class="panel"><div class="section-heading"><div><span class="eyebrow">สำรวจข้อมูลย้อนหลัง</span><h2 id="topHeading">เลขที่เคยออกในรางวัลที่ 1</h2></div></div><p class="muted">กดเลขเพื่อดูรายละเอียด • เรียงตามคะแนนในข้อมูลชุดนี้ ไม่ใช่เลขแนะนำให้ซื้อ</p><div id="topNumbers" class="top"><p>กำลังโหลดข้อมูล…</p></div></section>
+<noscript><p class="error">กรุณาเปิด JavaScript ในเบราว์เซอร์เพื่อใช้งาน</p></noscript>
+</main><footer class="wrap"><strong>เลขเล่าได้</strong><p>อ่านข้อมูลย้อนหลังอย่างเข้าใจ • ไม่รับประกันผลรางวัล</p></footer>
 </body></html>

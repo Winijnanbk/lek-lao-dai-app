@@ -1,61 +1,63 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const os = require('node:os');
-const {spawnSync} = require('node:child_process');
-const {pathToFileURL} = require('node:url');
-const assert = require('node:assert/strict');
-const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-const app = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
-assert(!/^(<<<<<<<|=======|>>>>>>>)/m.test(html), 'Unresolved merge conflict');
-assert(!/\bV2\b/.test(html), 'Legacy V2 remains');
-const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
-assert.equal(ids.length, new Set(ids).size, 'Duplicate IDs');
-assert.equal((html.match(/<script\b/g)||[]).length, 1, 'Expected one application script');
-assert(/<script src="app.js" defer><\/script>/.test(html));
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lottery-v3-test-'));
-const checks = `
-const failures=[];let checks=0;
-function check(value,label){checks++;if(!value)failures.push(label);}
-const input=document.getElementById('numberInput');
-const form=document.getElementById('analysisForm');
-const result=document.getElementById('resultSection');
-const err=document.getElementById('errorText');
-function type(value){input.value='';for(const char of value){if(input.value.length<input.maxLength){input.value+=char;input.dispatchEvent(new Event('input',{bubbles:true}));}}}
-function submit(){form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));}
-check(input.maxLength===6,'default six digits');
-for(const [key,num] of [['first','381527'],['front3','004'],['back3','009'],['last2','06'],['first','004128'],['front3','381'],['last2','27'],['back3','527'],['first','000001']]){
- document.querySelector('[data-mode="'+key+'"]').click();
- check(input.maxLength===num.length,key+' maxLength');
- check(document.querySelectorAll('[data-mode][aria-pressed="true"]').length===1,'one selected mode');
- type(num);check(input.value===num,key+' typed digits preserved');submit();
- check(!result.classList.contains('hidden'),key+' submit works');
- check(err.classList.contains('hidden'),key+' no validation error');
- check(document.querySelector('#summaryCards .number').textContent===num,key+' result preserves leading zeros');
- check(document.querySelectorAll('#summaryCards .card').length===(key==='first'?4:1),key+' card count');
- check(document.querySelectorAll('#positionStats .card').length===num.length,key+' position count');
- if(key==='first'){check([...document.querySelectorAll('#summaryCards .number')].map(x=>x.textContent).join(',')===[num,num.slice(0,3),num.slice(-3),num.slice(-2)].join(','),'six digit breakdown');}
- input.value='1';input.dispatchEvent(new Event('input'));submit();check(!err.classList.contains('hidden'),'short number rejected');
- input.value='';submit();check(result.classList.contains('hidden'),'empty input rejected');
- type(num+'9');check(input.value===num,'excess digit limited');
- document.querySelector('#topNumbers button small').click();check(!result.classList.contains('hidden'),'ranked number child click');
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),http=require('node:http'),assert=require('node:assert/strict');
+const {spawn}=require('node:child_process');
+const root=__dirname;
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'lottery-real-browser-'));
+const server=http.createServer((req,res)=>{
+ const url=new URL(req.url,'http://localhost');
+ let name=url.pathname.replace(/^\/lek-lao-dai-app\//,'')||'index.html';
+ if(!['index.html','styles.css','app.js','lottery-core.js','data/draws.json'].includes(name)){res.writeHead(404);res.end();return;}
+ res.setHeader('Content-Type',name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':name.endsWith('.json')?'application/json':'text/html; charset=utf-8');
+ let data=fs.readFileSync(path.join(root,name));
+ if(name==='index.html'&&url.searchParams.has('empty'))data=Buffer.from(data.toString().replace('<head>','<head><script>localStorage.clear();window.fetch=async()=>{throw Error("offline")}</script>'));
+ res.end(data);
+});
+let chrome,ws;const errors=[];let checks=0;
+async function main(){
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const port=server.address().port;
+ const browser=process.env.CHROME_PATH||(process.platform==='win32'?'C:/Program Files/Google/Chrome/Application/chrome.exe':'google-chrome');
+ chrome=spawn(browser,['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--remote-debugging-port=0','--user-data-dir='+path.join(dir,'profile'),'about:blank'],{windowsHide:true,stdio:['ignore','ignore','pipe']});
+ const endpoint=await new Promise((resolve,reject)=>{let text='';const timer=setTimeout(()=>reject(Error('Chrome startup timed out')),15000);chrome.once('error',reject);chrome.stderr.on('data',chunk=>{text+=chunk;const m=text.match(/DevTools listening on (ws:\/\/[^\s]+)/);if(m){clearTimeout(timer);resolve(m[1]);}});});
+ const debugPort=new URL(endpoint).port;
+ const targets=await (await fetch('http://127.0.0.1:'+debugPort+'/json/list')).json();
+ ws=new WebSocket(targets.find(x=>x.type==='page').webSocketDebuggerUrl);
+ await new Promise((r,j)=>{ws.addEventListener('open',r,{once:true});ws.addEventListener('error',j,{once:true});});
+ let seq=0;const pending=new Map();
+ ws.addEventListener('message',event=>{const m=JSON.parse(event.data);if(m.id){const p=pending.get(m.id);if(p){pending.delete(m.id);clearTimeout(p.timer);m.error?p.reject(Error(JSON.stringify(m.error))):p.resolve(m.result);}}if(m.method==='Runtime.exceptionThrown')errors.push(m.params.exceptionDetails.text);});
+ const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq;const timer=setTimeout(()=>reject(Error('CDP timeout: '+method)),20000);pending.set(id,{resolve,reject,timer});ws.send(JSON.stringify({id,method,params}));});
+ const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
+ async function wait(expression){for(let n=0;n<150;n++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,100));}throw Error('Page readiness timeout');}
+ function check(value,label){checks++;assert(value,label);}
+ await send('Runtime.enable');await send('Page.enable');
+ for(const width of [320,390,768,1280]){
+  await send('Emulation.setDeviceMetricsOverride',{width,height:960,deviceScaleFactor:1,mobile:width<768});
+  await send('Page.navigate',{url:'http://127.0.0.1:'+port+'/lek-lao-dai-app/index.html'});
+  await wait('typeof dataset!=="undefined" && !!dataset && !loading');
+  check(await evaluate('dataset.draws.length===60'),'real snapshot loaded');
+  check(await evaluate('document.documentElement.scrollWidth<=window.innerWidth'),'no horizontal overflow '+width);
+  for(const [mode,num] of [['first','730640'],['front3','060'],['back3','041'],['last2','04'],['first','004128']]){
+   await evaluate(`document.querySelector('[data-mode="${mode}"]').click();document.getElementById('numberInput').focus()`);
+   for(const digit of num)await send('Input.insertText',{text:digit});
+   check(await evaluate(`document.getElementById('numberInput').value==='${num}'`),'real typing '+mode+' '+width);
+   await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r'});await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+   check(await evaluate(`!document.getElementById('resultSection').classList.contains('hidden') && document.querySelector('#summaryCards .number').textContent==='${num}'`),'Enter analysis '+mode);
+   check(await evaluate(`document.querySelectorAll('#summaryCards .card').length===${mode==='first'?4:1}`),'correct breakdown');
+   check(await evaluate('document.documentElement.scrollWidth<=window.innerWidth'),'result fits '+width);
+  }
+  const report=await evaluate(`(()=>{let n=0;function ok(v){n++;if(!v)throw Error('DOM check '+n)}const input=document.getElementById('numberInput');document.getElementById('clearBtn').click();ok(input.value==='');document.getElementById('analysisForm').requestSubmit();ok(!document.getElementById('errorText').classList.contains('hidden'));input.value='x004128';input.dispatchEvent(new Event('input'));ok(input.value==='004128');document.getElementById('analysisForm').requestSubmit();ok(document.querySelector('#summaryCards .number').textContent==='004128');input.value='\u0e50\u0e50\u0e54\u0e51\u0e52\u0e58';input.dispatchEvent(new Event('input'));ok(input.value==='004128');document.querySelector('#topNumbers button small').click();ok(!document.getElementById('resultSection').classList.contains('hidden'));ok(document.querySelectorAll('[id]').length===new Set([...document.querySelectorAll('[id]')].map(x=>x.id)).size);ok(!document.querySelector('textarea'));return n})()`);checks+=report;
+  if(width===390||width===1280){const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});fs.writeFileSync(path.join(dir,'screen-'+width+'.png'),Buffer.from(shot.data,'base64'));}
+ }
+ check(await evaluate(`(async()=>{const original=window.fetch;const first=dataset.draws[0].first;window.fetch=async()=>{throw Error('offline')};await loadData();const ok=dataset.draws[0].first===first&&!document.getElementById('analyzeBtn').disabled&&document.getElementById('dataStatus').classList.contains('warn');window.fetch=original;return ok})()`),'offline retains real data');
+ check(await evaluate(`(async()=>{const original=window.fetch;const old=dataset;window.fetch=async()=>({ok:true,json:async()=>({schemaVersion:1,draws:[]})});await loadData();const ok=dataset===old;window.fetch=original;return ok})()`),'invalid snapshot preserves data');
+ check(await evaluate(`(async()=>{const original=window.fetch;let calls=0;window.fetch=async(...args)=>{calls++;return original(...args)};await Promise.all([loadData(),loadData()]);window.fetch=original;return calls===1})()`),'concurrent refresh deduplicated');
+ check(await evaluate(`(async()=>{const original=window.fetch,oldSet=window.setTimeout;window.setTimeout=(fn,ms)=>oldSet(fn,ms===12000?20:ms);window.fetch=(_,options)=>new Promise((_,reject)=>options.signal.addEventListener('abort',()=>reject(Error('timeout'))));await loadData();window.fetch=original;window.setTimeout=oldSet;return !loading&&!document.getElementById('refreshBtn').disabled&&!!dataset})()`),'timeout recovers');
+ await send('Page.navigate',{url:'http://127.0.0.1:'+port+'/lek-lao-dai-app/index.html?empty=1'});
+ await wait('typeof loading!=="undefined" && !loading');
+ check(await evaluate('dataset===null && document.getElementById("analyzeBtn").disabled'),'no data does not fabricate results');
+ check(await evaluate('document.getElementById("dataStatus").classList.contains("warn")'),'no-data error visible');
+ check(errors.length===0,'no uncaught browser exceptions: '+errors.join(','));
+ console.log('PASS '+checks+' Chrome checks: 320/390/768/1280px, real typing and Enter, leading zeros, Thai digits, clear, rank selection, API snapshot, offline, invalid response, timeout, concurrent refresh and empty state.');
+ console.log('Screenshots: '+dir);
 }
-document.querySelector('[data-mode="first"]').click();
-input.value='x00a4128';input.dispatchEvent(new Event('input'));check(input.value==='004128','pasted input sanitized');
-submit();check(!result.classList.contains('hidden'),'sanitized number analyzed');
-document.getElementById('dataInput').value=JSON.stringify({source:'test',draws:[{date:'2025-01-01',last2:'01'}]});
-document.getElementById('importBtn').click();type('000001');submit();check(document.querySelectorAll('#summaryCards .score').length===1,'missing categories not filled with demo');
-document.getElementById('demoBtn').click();type('381527');submit();check(document.querySelectorAll('#summaryCards .score').length===4,'demo reset');
-const report=document.createElement('pre');report.id='test-report';report.textContent=JSON.stringify({checks,failures});document.body.append(report);
-`;
-// Keep defer loading and the relative asset path, as on GitHub Pages.
-fs.writeFileSync(path.join(dir,'app.js'), app);
-fs.writeFileSync(path.join(dir,'test.html'), html.replace('</body>', '<script>window.addEventListener("load",()=>{'+checks+'});</script></body>'));
-const browser = process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const run = spawnSync(browser, ['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--user-data-dir='+path.join(dir,'profile'),'--dump-dom',pathToFileURL(path.join(dir,'test.html')).href], {encoding:'utf8',timeout:60000,maxBuffer:4*1024*1024,windowsHide:true});
-if(run.error)throw run.error;
-const report=run.stdout.match(/<pre id="test-report">(.*?)<\/pre>/);
-assert(report, 'Browser checks did not complete: '+run.stderr.slice(-1000));
-const result=JSON.parse(report[1].replace(/&quot;/g,'"').replace(/&amp;/g,'&'));
-assert.deepEqual(result.failures,[]);
-console.log('PASS: '+result.checks+' Chrome DOM/event checks; no merge markers, duplicate IDs, or V2 scripts.');
-console.log('Browser test artifacts: '+dir);
+main().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>{if(ws)ws.close();if(chrome)chrome.kill();server.close();});
