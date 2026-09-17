@@ -10,6 +10,7 @@ const server=http.createServer((req,res)=>{
  res.setHeader('Content-Type',name.endsWith('.css')?'text/css':name.endsWith('.js')?'text/javascript':name.endsWith('.json')?'application/json':'text/html; charset=utf-8');
  let data=fs.readFileSync(path.join(root,name));
  if(name==='index.html'&&url.searchParams.has('empty'))data=Buffer.from(data.toString().replace('<head>','<head><script>localStorage.clear();window.fetch=async()=>{throw Error("offline")}</script>'));
+ if(name==='index.html'&&url.searchParams.has('broken'))data=Buffer.from(data.toString().replace(/<script src="app\.js[^\"]*" defer><\/script>/,'<script src="missing-app.js" defer></script>'));
  res.end(data);
 });
 let chrome,ws;const errors=[];let checks=0;
@@ -56,6 +57,9 @@ async function main(){
  await wait('typeof loading!=="undefined" && !loading');
  check(await evaluate('dataset===null && document.getElementById("analyzeBtn").disabled'),'no data does not fabricate results');
  check(await evaluate('document.getElementById("dataStatus").classList.contains("warn")'),'no-data error visible');
+ await send('Page.navigate',{url:'http://127.0.0.1:'+port+'/lek-lao-dai-app/index.html?broken=1'});
+ await wait('document.getElementById("dataStatus")?.classList.contains("warn")');
+ check(await evaluate('!window.lotteryAppStarted && !document.getElementById("refreshBtn").disabled'),'missing application script offers recovery instead of indefinite loading');
  check(errors.length===0,'no uncaught browser exceptions: '+errors.join(','));
  console.log('PASS '+checks+' Chrome checks: 320/390/768/1280px, real typing and Enter, leading zeros, Thai digits, clear, rank selection, API snapshot, offline, invalid response, timeout, concurrent refresh and empty state.');
  console.log('Screenshots: '+dir);

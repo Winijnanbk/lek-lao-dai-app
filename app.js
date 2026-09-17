@@ -14,12 +14,12 @@ function renderData(){
  $('checkedAt').textContent='ระบบตรวจแหล่งข้อมูลเมื่อ '+new Intl.DateTimeFormat('th-TH',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Bangkok'}).format(new Date(dataset.fetchedAt))+' น. • มีประวัติ '+dataset.draws.length+' งวด';
  renderTop();
 }
-function status(text,warn=false){$('dataStatus').textContent=text;$('dataStatus').classList.toggle('warn',warn);}
+function showDataStatus(text,warn=false){$('dataStatus').textContent=text;$('dataStatus').classList.toggle('warn',warn);}
 function isNewer(next){return !dataset||next.draws[0].date>dataset.draws[0].date||(next.draws[0].date===dataset.draws[0].date&&next.fetchedAt>=dataset.fetchedAt);}
 async function loadData(){
  if(loading)return;
  loading=true;$('refreshBtn').disabled=true;$('refreshBtn').textContent='กำลังอัปเดต…';$('refreshBtn').setAttribute('aria-busy','true');
- status(dataset?'กำลังตรวจข้อมูลใหม่ คุณยังดูสถิติจากข้อมูลที่มีได้':'กำลังโหลดผลสลากจริง กรุณารอสักครู่…');
+ showDataStatus(dataset?'กำลังตรวจข้อมูลใหม่ คุณยังดูสถิติจากข้อมูลที่มีได้':'กำลังโหลดผลสลากจริง กรุณารอสักครู่…');
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
  try{
   const response=await fetch('./data/draws.json?t='+Date.now(),{cache:'no-store',signal:controller.signal});
@@ -29,10 +29,10 @@ async function loadData(){
   renderData();
   const age=(Date.now()-Date.parse(dataset.draws[0].date+'T00:00:00+07:00'))/86400000;
   const checkedAge=(Date.now()-Date.parse(dataset.fetchedAt))/3600000;
-  status((age>20||checkedAge>48?'ข้อมูลอาจยังไม่ถึงงวดปัจจุบัน • ':'พร้อมใช้งาน • ')+dataset.draws.length+' งวด จากสำนักงานสลากฯ • ถึง '+dateText(dataset.draws[0].date),age>20||checkedAge>48);
+  showDataStatus((age>20||checkedAge>48?'ข้อมูลอาจยังไม่ถึงงวดปัจจุบัน • ':'พร้อมใช้งาน • ')+dataset.draws.length+' งวด จากสำนักงานสลากฯ • ถึง '+dateText(dataset.draws[0].date),age>20||checkedAge>48);
   if(!$('resultSection').classList.contains('hidden'))analyze(false);
  }catch{
-  status(dataset?'เชื่อมต่อไม่ได้ แสดงข้อมูลที่บันทึกไว้ถึง '+dateText(dataset.draws[0].date)+' • ลองกดอัปเดตอีกครั้ง':'ยังโหลดผลสลากไม่ได้ กรุณาตรวจอินเทอร์เน็ตแล้วกดอัปเดตผลหวย',true);
+  showDataStatus(dataset?'เชื่อมต่อไม่ได้ แสดงข้อมูลที่บันทึกไว้ถึง '+dateText(dataset.draws[0].date)+' • ลองกดอัปเดตอีกครั้ง':'ยังโหลดผลสลากไม่ได้ กรุณาตรวจอินเทอร์เน็ตแล้วกดอัปเดตผลหวย',true);
   if(!dataset){$('dataHeading').textContent='ยังไม่มีข้อมูลผลสลาก';$('topNumbers').textContent='เมื่อโหลดข้อมูลสำเร็จ เลขย้อนหลังจะแสดงที่นี่';}
  }finally{clearTimeout(timer);loading=false;$('refreshBtn').disabled=false;$('refreshBtn').textContent='อัปเดตผลหวย';$('refreshBtn').setAttribute('aria-busy','false');}
 }
@@ -73,3 +73,4 @@ $('topNumbers').addEventListener('click',e=>{const b=e.target.closest('[data-num
 $('refreshBtn').addEventListener('click',loadData);
 try{const saved=localStorage.getItem(CACHE_KEY);if(saved)dataset=validateDataset(JSON.parse(saved));}catch{}
 setMode('first');renderData();loadData();
+window.lotteryAppStarted=true;

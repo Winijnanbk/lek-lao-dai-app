@@ -4,8 +4,35 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#123e49"><meta name="description" content="ดูสถิติเลขสลากจากผลย้อนหลังจริงของสำนักงานสลากกินแบ่งรัฐบาล วิเคราะห์เลข 6 หลักและเลขหน้า–ท้าย ใช้ง่ายบนมือถือ">
 <title>เลขเล่าได้ | สถิติจากผลสลากจริง</title>
-<link rel="stylesheet" href="styles.css">
-<script src="lottery-core.js" defer></script><script src="app.js" defer></script>
+<link rel="stylesheet" href="styles.css?v=39460c615edf">
+<script>
+// Independent startup guard: still works when a cached or missing app script fails.
+(function () {
+  var failed = false;
+  function showStartupError() {
+    if (window.lotteryAppStarted || failed) return;
+    var status = document.getElementById('dataStatus');
+    var refresh = document.getElementById('refreshBtn');
+    if (!status || !refresh) return;
+    failed = true;
+    document.getElementById('dataHeading').textContent = 'เปิดแอปไม่สำเร็จ';
+    status.textContent = 'ไฟล์แอปอาจยังอัปเดตไม่ครบ กรุณากดเปิดแอปใหม่';
+    status.classList.add('warn');
+    refresh.disabled = false;
+    refresh.textContent = 'เปิดแอปใหม่';
+    refresh.addEventListener('click', function (event) {
+      if (window.lotteryAppStarted) return;
+      event.stopImmediatePropagation();
+      var url = new URL(location.href);
+      url.searchParams.set('reload', Date.now());
+      location.replace(url.href);
+    }, true);
+  }
+  setTimeout(showStartupError, 8000);
+  window.addEventListener('error', function () { setTimeout(showStartupError, 0); }, true);
+})();
+</script>
+<script src="lottery-core.js?v=038245519fed" defer></script><script src="app.js?v=62c2b6fea17d" defer></script>
 </head>
 <body>
 <a class="skip" href="#numberInput">ข้ามไปกรอกเลข</a>
