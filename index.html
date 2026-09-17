@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="เลขเล่าได้ - เครื่องมือวิเคราะห์สถิติเลขท้าย 2 ตัวจากข้อมูลย้อนหลัง เพื่อประกอบการตัดสินใจ" />
+  <title>เลขเล่าได้ | วิเคราะห์สถิติเลขท้าย 2 ตัว</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Tahoma','Arial','sans-serif'] } } } }
+  </script>
+  <style>
+    * { border-radius: 0 !important; }
+    body { background:#f7f9fc; color:#172033; }
+    .focus-ring:focus { outline: 4px solid #facc15; outline-offset: 2px; }
+  </style>
+</head>
+<body class="font-sans min-h-screen">
+  <header class="bg-[#0b3a82] text-white border-b-4 border-[#f4c430]">
+    <div class="max-w-5xl mx-auto px-4 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <div class="text-3xl font-bold tracking-tight">เลขเล่าได้</div>
+        <div class="text-base md:text-lg text-blue-100 mt-1">ดูสถิติย้อนหลังให้เข้าใจง่าย ก่อนตัดสินใจ</div>
+      </div>
+      <div class="border border-blue-200 px-4 py-2 text-base bg-[#082f6b]">V1 • เลขท้าย 2 ตัว</div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6 md:py-8">
+    <section class="bg-white border-2 border-slate-300 p-5 md:p-7">
+      <h1 class="text-2xl md:text-3xl font-bold text-[#0b3a82]">ลองวิเคราะห์เลขที่คุณสนใจ</h1>
+      <p class="mt-2 text-lg leading-8 text-slate-700">กรอกเลข 2 ตัว เช่น 27 ระบบจะแสดง “คะแนนสถิติ” จากข้อมูลตัวอย่างย้อนหลัง พร้อมบอกที่มาของคะแนนแบบอ่านง่าย</p>
+
+      <div class="mt-6 grid md:grid-cols-[1fr_220px] gap-3">
+        <label class="block">
+          <span class="block text-lg font-bold mb-2">เลข 2 ตัว</span>
+          <input id="numberInput" inputmode="numeric" maxlength="2" placeholder="เช่น 27" class="focus-ring w-full border-2 border-slate-500 px-4 py-4 text-3xl font-bold tracking-[0.3em] bg-white" />
+        </label>
+        <button id="analyzeBtn" class="focus-ring md:self-end bg-[#0b3a82] hover:bg-[#082f6b] active:bg-[#061f48] text-white text-xl font-bold px-5 py-4 min-h-[68px]">วิเคราะห์เลข</button>
+      </div>
+      <p id="errorText" class="hidden mt-3 border-l-8 border-red-600 bg-red-50 px-4 py-3 text-lg font-bold text-red-800" role="alert"></p>
+    </section>
+
+    <section id="resultSection" class="hidden mt-6 bg-white border-2 border-slate-300">
+      <div class="bg-[#eaf2ff] border-b-2 border-slate-300 px-5 py-4">
+        <div class="text-lg text-slate-700">ผลวิเคราะห์</div>
+        <div class="flex items-end gap-3 mt-1">
+          <span class="text-5xl font-bold text-[#0b3a82]" id="resultNumber">27</span>
+          <span class="text-xl mb-1">คะแนนสถิติ</span>
+        </div>
+      </div>
+
+      <div class="p-5 md:p-7 grid lg:grid-cols-[280px_1fr] gap-7">
+        <div class="border-2 border-[#0b3a82] p-5 text-center">
+          <div class="text-lg font-bold">คะแนนจากข้อมูลย้อนหลัง</div>
+          <div class="text-6xl font-bold text-[#0b3a82] mt-3"><span id="score">0</span><span class="text-2xl text-slate-500">/100</span></div>
+          <div class="h-5 border-2 border-slate-500 mt-5 bg-slate-100">
+            <div id="scoreBar" class="h-full bg-[#0b3a82]" style="width:0%"></div>
+          </div>
+          <div id="scoreLabel" class="mt-3 text-lg font-bold"></div>
+        </div>
+
+        <div>
+          <h2 class="text-2xl font-bold text-[#0b3a82]">ข้อมูลที่ใช้ประกอบคะแนน</h2>
+          <div class="mt-4 border-t-2 border-slate-300">
+            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>พบใน 30 งวดตัวอย่าง</span><strong class="text-right" id="frequency">0 ครั้ง</strong></div>
+            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>ห่างจากครั้งล่าสุด</span><strong class="text-right" id="gap">-</strong></div>
+            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>ความถี่เลขหลักสิบ</span><strong class="text-right" id="tensFreq">-</strong></div>
+            <div class="grid grid-cols-2 py-3 border-b border-slate-300 text-lg"><span>ความถี่เลขหลักหน่วย</span><strong class="text-right" id="onesFreq">-</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-5 md:px-7 pb-7">
+        <h2 class="text-2xl font-bold text-[#0b3a82]">ทำไมได้คะแนนนี้?</h2>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full border-collapse text-lg min-w-[620px]">
+            <thead><tr class="bg-[#0b3a82] text-white"><th class="text-left p-3 border border-slate-400">หัวข้อ</th><th class="text-left p-3 border border-slate-400">สิ่งที่พบ</th><th class="text-right p-3 border border-slate-400">คะแนน</th></tr></thead>
+            <tbody id="reasonRows"></tbody>
+          </table>
+        </div>
+        <div class="mt-5 border-l-8 border-[#f4c430] bg-yellow-50 px-4 py-4 text-lg leading-7">
+          <strong>สำคัญ:</strong> คะแนนนี้เป็นคะแนนที่เว็บสร้างจากสถิติย้อนหลัง ไม่ใช่เปอร์เซ็นต์โอกาสถูกรางวัล และไม่ได้หมายความว่าเลขที่เคยออกบ่อยจะต้องออกอีก
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-6 bg-white border-2 border-slate-300 p-5 md:p-7">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
+        <div><h2 class="text-2xl font-bold text-[#0b3a82]">เลขที่เด่นในชุดข้อมูลตัวอย่าง</h2><p class="text-lg mt-1 text-slate-600">กดที่เลขเพื่อดูรายละเอียดได้ทันที</p></div>
+        <span class="text-base bg-slate-100 border border-slate-300 px-3 py-2">เรียงตามคะแนนสถิติ</span>
+      </div>
+      <div id="topNumbers" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-5"></div>
+    </section>
+
+    <section class="mt-6 grid md:grid-cols-2 gap-6">
+      <div class="bg-white border-2 border-slate-300 p-5 md:p-6">
+        <h2 class="text-xl font-bold text-[#0b3a82]">สูตรคะแนน V1</h2>
+        <div class="text-lg leading-8 mt-3">
+          <div>ความถี่ย้อนหลัง <strong>40 คะแนน</strong></div>
+          <div>ระยะห่างจากครั้งล่าสุด <strong>25 คะแนน</strong></div>
+          <div>ความถี่ตัวเลขรายหลัก <strong>20 คะแนน</strong></div>
+          <div>แนวโน้มช่วงล่าสุด <strong>15 คะแนน</strong></div>
+        </div>
+      </div>
+      <div class="bg-white border-2 border-slate-300 p-5 md:p-6">
+        <h2 class="text-xl font-bold text-[#0b3a82]">แหล่งข้อมูลสำหรับเวอร์ชันจริง</h2>
+        <p class="text-lg leading-8 mt-3">V1 นี้ใช้ชุดข้อมูลจำลองในไฟล์เพื่อให้ทดลองหน้าเว็บได้ทันที เวอร์ชันถัดไปควรเชื่อมข้อมูลผลรางวัลจากสำนักงานสลากกินแบ่งรัฐบาล และแสดงวันที่อัปเดตทุกครั้ง</p>
+        <a class="focus-ring inline-block mt-3 text-lg font-bold text-[#0b3a82] underline" href="https://gdcatalog.glo.or.th/dataset/dataset_c4-9_01" target="_blank" rel="noopener">ดู GLO Open Data</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mt-8 bg-[#10223f] text-white border-t-4 border-[#f4c430]">
+    <div class="max-w-5xl mx-auto px-4 py-6 text-base leading-7">
+      <strong>เลขเล่าได้</strong> เป็นเครื่องมือสรุปข้อมูลเชิงสถิติ ไม่ใช่บริการรับประกันผลรางวัล โปรดใช้ข้อมูลอย่างมีวิจารณญาณและกำหนดงบประมาณที่รับความเสี่ยงได้
+    </div>
+  </footer>
+
+<script>
+// DEMO DATA: เลขท้าย 2 ตัวจำลอง 30 งวด เรียงจากใหม่ -> เก่า
+const history = ['06','94','51','27','87','79','61','32','09','90','21','46','43','89','14','85','31','91','62','37','05','99','58','16','81','27','44','73','27','20'];
+
+const input = document.getElementById('numberInput');
+const resultSection = document.getElementById('resultSection');
+const errorText = document.getElementById('errorText');
+
+input.addEventListener('input', () => input.value = input.value.replace(/\D/g,'').slice(0,2));
+input.addEventListener('keydown', e => { if(e.key === 'Enter') analyze(); });
+document.getElementById('analyzeBtn').addEventListener('click', analyze);
+
+function calc(num){
+  const freq = history.filter(x => x === num).length;
+  const idx = history.indexOf(num);
+  const gap = idx === -1 ? history.length : idx;
+  const tens = num[0], ones = num[1];
+  const tensCount = history.filter(x => x[0] === tens).length;
+  const onesCount = history.filter(x => x[1] === ones).length;
+  const recent10 = history.slice(0,10).filter(x => x === num).length;
+
+  const frequencyScore = Math.min(40, Math.round((freq / 4) * 40));
+  const gapScore = Math.min(25, Math.round((gap / 15) * 25));
+  const digitScore = Math.min(20, Math.round(((tensCount + onesCount) / 12) * 20));
+  const recentScore = Math.min(15, recent10 * 15);
+  const score = Math.min(100, frequencyScore + gapScore + digitScore + recentScore);
+  return {num,freq,gap,tensCount,onesCount,recent10,frequencyScore,gapScore,digitScore,recentScore,score};
+}
+
+function level(n, expected=3){
+  if(n >= expected + 2) return 'สูงกว่าค่าเฉลี่ย';
+  if(n <= Math.max(0, expected - 2)) return 'ต่ำกว่าค่าเฉลี่ย';
+  return 'ใกล้ค่าเฉลี่ย';
+}
+
+function analyze(forced){
+  // เมื่อเรียกจาก addEventListener ตัวแปร forced จะเป็น Event ไม่ใช่เลข
+  // รับ forced เฉพาะกรณีที่ส่งเลขจากปุ่มอันดับเข้ามาเท่านั้น
+  const raw = (typeof forced === 'string') ? forced : input.value;
+  const num = raw.trim();
+  if(!/^\d{2}$/.test(num)){
+    errorText.textContent = 'กรุณากรอกตัวเลขให้ครบ 2 หลัก เช่น 07 หรือ 27';
+    errorText.classList.remove('hidden');
+    resultSection.classList.add('hidden');
+    return;
+  }
+  errorText.classList.add('hidden');
+  input.value = num;
+  const r = calc(num);
+  document.getElementById('resultNumber').textContent = num;
+  document.getElementById('score').textContent = r.score;
+  document.getElementById('scoreBar').style.width = r.score + '%';
+  document.getElementById('scoreLabel').textContent = r.score >= 70 ? 'เด่นในชุดข้อมูลนี้' : r.score >= 45 ? 'ระดับกลางในชุดข้อมูลนี้' : 'พบสัญญาณทางสถิติน้อย';
+  document.getElementById('frequency').textContent = r.freq + ' ครั้ง';
+  document.getElementById('gap').textContent = r.gap >= history.length ? 'ไม่พบใน 30 งวด' : r.gap === 0 ? 'งวดล่าสุด' : r.gap + ' งวด';
+  document.getElementById('tensFreq').textContent = r.tensCount + ' ครั้ง • ' + level(r.tensCount);
+  document.getElementById('onesFreq').textContent = r.onesCount + ' ครั้ง • ' + level(r.onesCount);
+  document.getElementById('reasonRows').innerHTML = `
+    <tr><td class="p-3 border border-slate-300">ความถี่ย้อนหลัง</td><td class="p-3 border border-slate-300">เลข ${num} พบ ${r.freq} ครั้งใน 30 งวด</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.frequencyScore}/40</td></tr>
+    <tr class="bg-slate-50"><td class="p-3 border border-slate-300">ระยะห่าง</td><td class="p-3 border border-slate-300">${r.gap >= history.length ? 'ยังไม่พบในชุดข้อมูล' : `ผ่าน ${r.gap} งวดจากครั้งล่าสุด`}</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.gapScore}/25</td></tr>
+    <tr><td class="p-3 border border-slate-300">ตัวเลขรายหลัก</td><td class="p-3 border border-slate-300">หลักสิบ ${num[0]} พบ ${r.tensCount} ครั้ง • หลักหน่วย ${num[1]} พบ ${r.onesCount} ครั้ง</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.digitScore}/20</td></tr>
+    <tr class="bg-slate-50"><td class="p-3 border border-slate-300">10 งวดล่าสุด</td><td class="p-3 border border-slate-300">พบเลขตรงกัน ${r.recent10} ครั้ง</td><td class="p-3 border border-slate-300 text-right font-bold">+${r.recentScore}/15</td></tr>`;
+  resultSection.classList.remove('hidden');
+  resultSection.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderTop(){
+  const all = Array.from({length:100},(_,i)=>calc(String(i).padStart(2,'0'))).sort((a,b)=>b.score-a.score).slice(0,10);
+  document.getElementById('topNumbers').innerHTML = all.map((r,i)=>`<button onclick="analyze('${r.num}')" class="focus-ring text-left border-2 ${i<3?'border-[#0b3a82]':'border-slate-300'} bg-white hover:bg-blue-50 p-4 min-h-[94px]"><div class="text-3xl font-bold text-[#0b3a82]">${r.num}</div><div class="text-base mt-1">คะแนน ${r.score}/100</div></button>`).join('');
+}
+renderTop();
+</script>
+</body>
+</html>
